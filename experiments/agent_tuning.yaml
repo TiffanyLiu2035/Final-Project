@@ -1,0 +1,23 @@
+# AI Agent 调参文件（可选）
+# 存在时会在实验加载时覆盖 experiments/config.py 中的默认值，便于不改代码即可调整行为。
+# 删除本文件或留空则使用 config.py 默认值。
+
+# 策略更新间隔（每多少轮调用一次 LLM 更新 lambda）
+# update_interval: 50
+
+# 公平感知型 Agent 的 slift 合规红线，低于此值会在 Prompt 中触发「严重警告」
+# slift_low_threshold: 0.95
+
+# Type 2 性格文案（3 条，对应 i%3）。修改后 9 个逐利型 Agent 会按顺序轮换使用
+# adaptive_personas:
+#   - "Risk Preference: Aggressive. You prefer high bids to win more, accepting lower ROI."
+#   - "Risk Preference: Conservative. You are extremely cautious, strictly avoiding low ROI."
+#   - "Risk Preference: Balanced. You seek a stable balance between volume and efficiency."
+
+# Type 3 性格文案（3 条）。修改后 9 个公平感知型 Agent 会按顺序轮换使用
+# fairness_personas:
+#   - "Compliance Style: Radical. You prioritize fairness above all else, reacting strongly to any bias."
+#   - "Compliance Style: Pragmatic. You try to fix fairness issues gradually while protecting profit."
+#   - "Compliance Style: Strict. You follow the fairness threshold precisely."
+
+# 取消上面注释并改值即可生效；保留注释则使用 config.py 默认。

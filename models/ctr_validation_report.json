@@ -1,0 +1,95 @@
+{
+  "timestamp": "2026-02-24T01:59:44.480463",
+  "note": "Validation on test.yzx.txt without retraining",
+  "validation_data": "test.yzx.txt (held-out)",
+  "per_advertiser": [
+    {
+      "adv_id": "1458",
+      "n_train": null,
+      "n_test": 224754,
+      "auc": 0.909311,
+      "logloss": 0.003162,
+      "mean_pctr": 0.000723,
+      "model_type": "sgd_log"
+    },
+    {
+      "adv_id": "2259",
+      "n_train": null,
+      "n_test": 60912,
+      "auc": 0.675337,
+      "logloss": 0.003468,
+      "mean_pctr": 0.000234,
+      "model_type": "sgd_log"
+    },
+    {
+      "adv_id": "2261",
+      "n_train": null,
+      "n_test": 50127,
+      "auc": 0.692346,
+      "logloss": 0.002852,
+      "mean_pctr": 0.000439,
+      "model_type": "sgd_log"
+    },
+    {
+      "adv_id": "2821",
+      "n_train": null,
+      "n_test": 96414,
+      "auc": 0.612285,
+      "logloss": 0.006581,
+      "mean_pctr": 0.000598,
+      "model_type": "sgd_log"
+    },
+    {
+      "adv_id": "2997",
+      "n_train": null,
+      "n_test": 22776,
+      "auc": 0.605209,
+      "logloss": 0.027893,
+      "mean_pctr": 0.002314,
+      "model_type": "sgd_log"
+    },
+    {
+      "adv_id": "3358",
+      "n_train": null,
+      "n_test": 126999,
+      "auc": 0.920099,
+      "logloss": 0.004323,
+      "mean_pctr": 0.000611,
+      "model_type": "sgd_log"
+    },
+    {
+      "adv_id": "3386",
+      "n_train": null,
+      "n_test": 207604,
+      "auc": 0.749463,
+      "logloss": 0.005486,
+      "mean_pctr": 0.000658,
+      "model_type": "sgd_log"
+    },
+    {
+      "adv_id": "3427",
+      "n_train": null,
+      "n_test": 189085,
+      "auc": 0.89125,
+      "logloss": 0.003449,
+      "mean_pctr": 0.000765,
+      "model_type": "sgd_log"
+    },
+    {
+      "adv_id": "3476",
+      "n_train": null,
+      "n_test": 143639,
+      "auc": 0.84669,
+      "logloss": 0.00354,
+      "mean_pctr": 0.000371,
+      "model_type": "sgd_log"
+    }
+  ],
+  "summary": {
+    "n_advertisers": 9,
+    "mean_auc": 0.766888,
+    "std_auc": 0.120128,
+    "mean_logloss": 0.00675,
+    "mean_pctr": 0.000746
+  }
+}
