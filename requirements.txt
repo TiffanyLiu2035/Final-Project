@@ -1,13 +1,13 @@
-# 实验与数据处理
+# Experiments and data processing
 numpy>=1.21.0
 pandas
 scipy>=1.7.0
-# 建议与 CTR 模型训练时版本一致（若训练用 1.8.0 需 Python 3.11+）
+# Prefer same version as CTR model training (e.g. 1.8.0 needs Python 3.11+)
 scikit-learn>=1.0.0
 joblib>=1.1.0
-# LLM 实验（OpenAI API 调用）
+# LLM experiments (OpenAI API)
 openai>=1.0.0
-# 可视化与工具
+# Visualization and utilities
 matplotlib
 shap
 streamlit

@@ -1,23 +1,23 @@
-# AIRTB 多智能体仿真系统 - 整体架构
+# AIRTB multi-agent simulation system — architecture
 
-## 📐 系统架构概览
+## System overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        应用入口层                                 │
+│                        Application entry                        │
 │  main.py  →  experiments.experiment_runner.main()               │
-│  run_gender_fairness_experiment.py  (可选，独立跑 GSP vs Constrained) │
+│  run_gender_fairness_experiment.py  (optional: GSP vs Constrained only) │
 └────────────────────────┬────────────────────────────────────────┘
                          │
                          ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      实验管理层                                   │
+│                      Experiment layer                           │
 │              experiments/experiment_runner.py                    │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │ ExperimentRunner                                          │  │
-│  │  - 按实验组 (1~4) 创建 Agent，注入 GSP 或 Constrained 机制   │  │
-│  │  - 调用 SimulationEngine.run()，收集 round_history         │  │
-│  │  - 计算 GenderFairnessMetrics，导出日志与报告               │  │
+│  │  - Create agents by group (1–4), inject GSP or Constrained │  │
+│  │  - Call SimulationEngine.run(), collect round_history     │  │
+│  │  - Compute GenderFairnessMetrics, write logs and reports  │  │
 │  └──────────────────────────────────────────────────────────┘  │
 └────────────────────────┬────────────────────────────────────────┘
                          │
@@ -25,36 +25,37 @@
          │               │               │
          ▼               ▼               ▼
 ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│  配置        │  │  Agent 工厂   │  │  仿真引擎     │
+│  Config      │  │ Agent factory│  │ Simulation   │
 │ experiments/ │  │ experiments/ │  │ engine/      │
-│ config.py     │  │ agent_factory│  │ simulation.py│
-│ agent_tuning  │  │              │  │              │
-│ .yaml(可选)  │  │ - 按 strategy │  │ - 每轮收集   │
-│              │  │   创建三类    │  │   出价→选胜者 │
-│ - 广告主/预算 │  │   Agent 实例 │  │ - platform   │
-│ - 轮数/LLM   │  │ - 组 1~4 配置 │  │   可替换为   │
-└──────────────┘  └──────────────┘  │   GSP/Constrained
+│ config.py    │  │ agent_factory│  │ simulation.py│
+│ agent_tuning │  │              │  │              │
+│ .yaml (opt)  │  │ - Create     │  │ - Per round: │
+│              │  │   three agent│  │   collect    │
+│ - Advertiser/│  │   types by   │  │   bids→winner│
+│   budget     │  │   strategy   │  │ - platform   │
+│ - Rounds/LLM │  │ - Groups 1–4 │  │   swappable  │
+└──────────────┘  └──────────────┘  │   GSP/Constr.│
                                     └──────┬───────┘
                     ┌──────────────────────┼───────────────────────┐
                     │                      │                       │
                     ▼                      ▼                       ▼
          ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-         │   Agent 层       │   │   拍卖机制        │   │   工具层          │
-         │   agents/        │   │   mechanisms/     │   │   tools/          │
+         │   Agent layer    │   │   Mechanisms     │   │   Tools          │
+         │   agents/        │   │   mechanisms/    │   │   tools/          │
          │                  │   │                  │   │                   │
-         │ - DataDrivenAgent│   │ - GSPMechanism    │   │ - CTRModel        │
-         │   (组1 基线)     │   │ - Constrained     │   │ - LLMClient       │
+         │ - DataDrivenAgent│   │ - GSPMechanism   │   │ - CTRModel        │
+         │   (Group 1 base) │   │ - Constrained    │   │ - LLMClient       │
          │ - AdaptiveProfit │   │   AuctionMechanism│   │ - ipinyou_loader  │
-         │   Agent (组2)    │   │   (受众性别约束)   │   │ - impression_pool │
-         │ - FairnessAware  │   │                  │   │ - gender_*       │
-         │   Agent (组3)    │   │ (注入 engine.     │   │   feature_mapper  │
-         │ 组4 为三类混合   │   │  platform)        │   │   _pool           │
-         └──────────────────┘   └──────────────────┘   └──────────────────┘
-                    │                      │
+         │   Agent (Grp 2)  │   │   (audience      │   │ - impression_pool │
+         │ - FairnessAware  │   │   gender bounds) │   │ - gender_*        │
+         │   Agent (Grp 3)  │   │                  │   │   feature_mapper  │
+         │ Group 4 = mix    │   │ (injected into   │   │   _pool           │
+         └──────────────────┘   │  engine.platform)│   └──────────────────┘
+                    │           └──────────────────┘
                     └───────────┬──────────┘
                                 ▼
                     ┌──────────────────┐
-                    │   指标层         │
+                    │   Metrics        │
                     │   metrics/       │
                     │ GenderFairness   │
                     │ Metrics          │
@@ -62,15 +63,15 @@
                     └──────────────────┘
 ```
 
-## 🔄 数据流
+## Data flow
 
-### 1. 训练阶段（离线）
+### 1. Training (offline)
 
 ```
-iPinYou 数据
+iPinYou data
     │
     ▼
-tools/ipinyou_loader.py  (解析 YZX 格式)
+tools/ipinyou_loader.py  (parse YZX format)
     │
     ▼
 scripts/train_ctr.py → tools/ctr_models.py
@@ -78,10 +79,10 @@ scripts/train_ctr.py → tools/ctr_models.py
     ▼
 models/{adv_id}/
     ├── ctr.joblib
-    └── (可选) bidding.json
+    └── (optional) bidding.json
 ```
 
-### 2. 实验阶段（在线仿真）
+### 2. Experiments (online simulation)
 
 ```
 ExperimentConfig.get_experiment_group_configs(group_num)
@@ -90,94 +91,94 @@ ExperimentConfig.get_experiment_group_configs(group_num)
 AgentFactory.create_agents(configs)
     │ (DataDriven / AdaptiveProfit / FairnessAware)
     ▼
-SimulationEngine(agents, ..., platform 可被替换为 GSP/Constrained)
+SimulationEngine(agents, ..., platform = GSP or Constrained)
     │
-    ├── 每轮：
-    │   ├── ImpressionPool 提供当前 impression（含性别等）
-    │   ├── Agent.decide_bid()  （CTRModel / LLM 决策）
+    ├── Per round:
+    │   ├── ImpressionPool supplies current impression (incl. gender)
+    │   ├── Agent.decide_bid()  (CTRModel / LLM)
     │   ├── platform.select_winner(bids[, agents][, impression])
-    │   ├── 更新 Agent 预算与指标
-    │   └── 写入 round_history
+    │   ├── Update agent budget and metrics
+    │   └── Append to round_history
     │
     ▼
-GenderFairnessMetrics 基于 round_history 计算
+GenderFairnessMetrics computed from round_history
     │
     ▼
-logs/（CSV、JSON、报告）
+logs/ (CSV, JSON, reports)
 ```
 
-## 🏗️ 核心组件
+## Core components
 
-### 1. Agent 层 (`agents/`)
+### 1. Agent layer (`agents/`)
 
 ```
 BaseAgent (base.py)
     │
     ├── DataDrivenAgent (data_driven_agent.py)
-    │   └── 组 1：CTR 模型出价，不感知公平、不更新策略
+    │   └── Group 1: CTR-based bids, no fairness awareness, no strategy updates
     │
     └── LLMBiddingAgent(DataDrivenAgent) (llm_bidding_agent.py)
-            ├── AdaptiveProfitAgent   — 组 2：逐利，按轮更新 λ_male/λ_female
-            └── FairnessAwareAgent   — 组 3：兼顾公平，slift 低于阈值时抑制更新
+            ├── AdaptiveProfitAgent   — Group 2: profit-seeking, update λ_male/λ_female per round
+            └── FairnessAwareAgent   — Group 3: fairness-aware; suppress updates when slift below threshold
 ```
 
-- 组 4：上述三类混合（各 3 个）。
-- 职责：`decide_bid()`、`update_metrics()`、可选 `observe_other_bids()` / `set_round_info()` 等。
+- Group 4: mix of the three types above (3 each).
+- Responsibilities: `decide_bid()`, `update_metrics()`, optional `observe_other_bids()` / `set_round_info()`.
 
-### 2. 拍卖机制 (`mechanisms/`)
+### 2. Auction mechanisms (`mechanisms/`)
 
-- **GSPMechanism**：第二价格拍卖，可选按 impression 过滤未知性别。
-- **ConstrainedAuctionMechanism**：受众性别约束（目标区间 [ℓ, 1−ℓ]），状态依赖公平调整。
-- 由 `experiment_runner` 创建后赋给 `engine.platform`，替代默认的 `engine/platform.py` 中简单价高者得 `Platform`。
+- **GSPMechanism**: Second-price auction; optional filter of unknown gender by impression.
+- **ConstrainedAuctionMechanism**: Audience gender constraints (target interval [ℓ, 1−ℓ]), state-dependent fairness adjustment.
+- Created by `experiment_runner` and assigned to `engine.platform`, replacing the default simple highest-bid-wins `Platform` in `engine/platform.py`.
 
-### 3. 仿真引擎 (`engine/`)
+### 3. Simulation engine (`engine/`)
 
-- **simulation.py**：轮次循环，收集出价 → 调用 `self.platform.select_winner(...)` → 更新 Agent 与 `round_history`。
-- **platform.py**：默认 `Platform`，仅用于未注入 GSP/Constrained 时的简单选胜者。
+- **simulation.py**: Round loop; collect bids → `self.platform.select_winner(...)` → update agents and `round_history`.
+- **platform.py**: Default `Platform` for simple winner selection when GSP/Constrained are not injected.
 
-### 4. 工具层 (`tools/`)
+### 4. Tools (`tools/`)
 
-- **ctr_models.py** — CTRModel  
-- **llm_client.py** — LLMClient  
-- **ipinyou_loader.py** — YZX 数据加载  
-- **impression_pool.py** — ImpressionPool（统一 impression 池）  
-- **gender_feature_mapper.py** / **gender_filtered_pool.py** — 性别特征与过滤  
-- **save_round_history.py** — 回合历史保存  
+- **ctr_models.py** — CTRModel
+- **llm_client.py** — LLMClient
+- **ipinyou_loader.py** — YZX data loading
+- **impression_pool.py** — ImpressionPool
+- **gender_feature_mapper.py** / **gender_filtered_pool.py** — gender feature and filtering
+- **save_round_history.py** — round history persistence
 
-### 5. 指标层 (`metrics/`)
+### 5. Metrics (`metrics/`)
 
-- **GenderFairnessMetrics**：slift（Selection Lift）、κ（Revenue Ratio）、dTV（Advertiser Displacement）等，基于 `round_history` 与受众性别。
+- **GenderFairnessMetrics**: slift (Selection Lift), κ (Revenue Ratio), dTV (Advertiser Displacement), etc., from `round_history` and audience gender.
 
-## 🔀 实验执行流程
+## Experiment execution flow
 
-1. **初始化**：加载 `.env`、`ExperimentConfig`（含可选 `agent_tuning.yaml`）、按组号取配置 → `AgentFactory.create_agents()`。
-2. **执行**：对每组、每种机制创建 `SimulationEngine`，设置 `engine.platform = GSPMechanism()` 或 `ConstrainedAuctionMechanism(...)` → `engine.run()`（轮数由 `ExperimentConfig.TOTAL_ROUNDS` 决定，默认 1000）。
-3. **结果**：`GenderFairnessMetrics` 计算 → 写入 `logs/`（CSV、JSON、图表等）。
+1. **Init**: Load `.env`, `ExperimentConfig` (optional `agent_tuning.yaml`), get config by group → `AgentFactory.create_agents()`.
+2. **Run**: For each group and mechanism, create `SimulationEngine`, set `engine.platform = GSPMechanism()` or `ConstrainedAuctionMechanism(...)` → `engine.run()` (rounds from `ExperimentConfig.TOTAL_ROUNDS`, default 1000).
+3. **Results**: `GenderFairnessMetrics` → write to `logs/` (CSV, JSON, etc.).
 
-## 📊 数据存储
+## Data layout
 
 ```
-项目根目录/
-├── models/{adv_id}/     # CTR 模型等
-├── logs/                # 实验日志、公平性结果
+project root/
+├── models/{adv_id}/     # CTR models, etc.
+├── logs/                # Experiment logs, fairness results
 └── scripts/train_ctr.py
 ```
 
-## 🔌 接口约定
+## Interface contract
 
 ### Agent
 
 - `decide_bid() -> float`
-- `update_budget(amount)`（由引擎在胜出时调用）
-- 可选：`set_round_info()`, `observe_other_bids()`, `update_metrics()`, `get_performance_metrics()`, `set_current_impression()`
+- `update_budget(amount)` (called by engine on win)
+- Optional: `set_round_info()`, `observe_other_bids()`, `update_metrics()`, `get_performance_metrics()`, `set_current_impression()`
 
-### 选胜者（platform / mechanism）
+### Winner selection (platform / mechanism)
 
-- 默认 `Platform.select_winner(bids)` → `(name, payment)` 或 `None`。
-- GSP / Constrained：`select_winner(bids, agents=None, impression=None)`，支持多 slot 时返回 `List[(name, payment)]`。引擎通过 `inspect.signature` 做兼容调用。
+- Default `Platform.select_winner(bids)` → `(name, payment)` or `None`.
+- GSP / Constrained: `select_winner(bids, agents=None, impression=None)`; may return `List[(name, payment)]` for multi-slot. Engine uses `inspect.signature` for compatibility.
 
-## 🎯 设计模式
+## Design patterns
 
-- **工厂**：`AgentFactory` 按 strategy 创建 Agent。
-- **策略可替换**：`SimulationEngine.platform` 可替换为 GSP 或 Constrained。
-- **模板方法**：`BaseAgent` 定义接口，子类实现 `decide_bid()` 等。
+- **Factory**: `AgentFactory` creates agents by strategy.
+- **Pluggable strategy**: `SimulationEngine.platform` can be GSP or Constrained.
+- **Template method**: `BaseAgent` defines interface; subclasses implement `decide_bid()` etc.
